@@ -55,6 +55,12 @@
           }
         </div>
 
+        <button class="nav-btn export-nav-btn" (click)="openExportModal('home'); $event.stopPropagation()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          Export
+          <span class="export-price-badge">₹49</span>
+        </button>
+
         <button class="nav-btn prev-elec-btn" [class.active-nav]="showPreviousElections()" (click)="openPreviousElections(); $event.stopPropagation()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
           Previous Elections
@@ -94,6 +100,11 @@
             <span class="detail-ac-count">(Total AC : {{ state.totalSeats }})</span>
           </div>
         </div>
+        <button class="detail-export-btn" (click)="openExportModal('detail')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          Export Results
+          <span class="export-price-badge dark">₹49</span>
+        </button>
       </div>
 
       <!-- Party Summary Tiles -->
@@ -232,6 +243,135 @@
     </div>
   }
 
+  <!-- EXPORT MODAL OVERLAY -->
+  @if (showExportModal()) {
+    <div class="modal-overlay" (click)="closeExportModal()">
+      <div class="export-modal" (click)="$event.stopPropagation()">
+
+        @if (exportPaymentDone()) {
+          <!-- Success State -->
+          <div class="export-success">
+            <div class="success-icon">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="#16a34a"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            </div>
+            <h3>Payment Successful!</h3>
+            <p>Your file is being prepared and will download shortly...</p>
+          </div>
+        } @else {
+          <!-- Modal Header -->
+          <div class="export-modal-header">
+            <div class="export-modal-title-block">
+              <div class="export-modal-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+              </div>
+              <div>
+                <h2 class="export-modal-title">Export Results</h2>
+                <p class="export-modal-sub">Download election data as your preferred format</p>
+              </div>
+            </div>
+            <button class="modal-close-btn" (click)="closeExportModal()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          <!-- Format Selection -->
+          <div class="export-modal-body">
+            <p class="export-section-label">Choose export format</p>
+            <div class="export-format-cards">
+              <label class="export-format-card" [class.selected]="exportFormat() === 'csv'">
+                <input type="radio" name="fmt" value="csv"
+                  [checked]="exportFormat() === 'csv'"
+                  (change)="exportFormat.set('csv')">
+                <div class="format-card-inner">
+                  <div class="format-icon csv-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6zm2-9h8v2H8zm0 4h8v2H8zm0-8h5v2H8z"/></svg>
+                  </div>
+                  <span class="format-card-name">CSV Spreadsheet</span>
+                  <span class="format-card-desc">Open in Excel, Google Sheets or any spreadsheet app</span>
+                  @if (exportFormat() === 'csv') {
+                    <span class="format-check">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    </span>
+                  }
+                </div>
+              </label>
+
+              <label class="export-format-card" [class.selected]="exportFormat() === 'pdf'">
+                <input type="radio" name="fmt" value="pdf"
+                  [checked]="exportFormat() === 'pdf'"
+                  (change)="exportFormat.set('pdf')">
+                <div class="format-card-inner">
+                  <div class="format-icon pdf-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>
+                  </div>
+                  <span class="format-card-name">PDF Report</span>
+                  <span class="format-card-desc">Printable formatted report, opens in browser for print</span>
+                  @if (exportFormat() === 'pdf') {
+                    <span class="format-check">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    </span>
+                  }
+                </div>
+              </label>
+            </div>
+
+            <!-- What's included -->
+            <div class="export-includes">
+              <p class="export-section-label" style="margin-bottom:10px">What's included</p>
+              @if (exportContext() === 'home') {
+                <ul class="export-includes-list">
+                  <li><svg width="14" height="14" viewBox="0 0 24 24" fill="#16a34a"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> All state results — Won &amp; Leading counts</li>
+                  <li><svg width="14" height="14" viewBox="0 0 24 24" fill="#16a34a"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Party-wise breakdown per state</li>
+                  <li><svg width="14" height="14" viewBox="0 0 24 24" fill="#16a34a"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Total seats &amp; majority marks</li>
+                </ul>
+              } @else if (exportContext() === 'detail') {
+                <ul class="export-includes-list">
+                  <li><svg width="14" height="14" viewBox="0 0 24 24" fill="#16a34a"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> All constituency-wise results</li>
+                  <li><svg width="14" height="14" viewBox="0 0 24 24" fill="#16a34a"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Candidate names, votes &amp; margins</li>
+                  <li><svg width="14" height="14" viewBox="0 0 24 24" fill="#16a34a"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Won / Leading status per seat</li>
+                </ul>
+              } @else {
+                <ul class="export-includes-list">
+                  <li><svg width="14" height="14" viewBox="0 0 24 24" fill="#16a34a"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Historical party-wise seat tally</li>
+                  <li><svg width="14" height="14" viewBox="0 0 24 24" fill="#16a34a"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Vote share percentages</li>
+                  <li><svg width="14" height="14" viewBox="0 0 24 24" fill="#16a34a"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Winning alliance / party</li>
+                </ul>
+              }
+            </div>
+          </div>
+
+          <!-- Payment Footer -->
+          <div class="export-modal-footer">
+            <div class="export-price-block">
+              <span class="export-price-label">One-time payment</span>
+              <span class="export-price-amount">₹49</span>
+              <span class="export-price-tax">incl. taxes</span>
+            </div>
+            <div class="export-footer-actions">
+              <button class="export-cancel-btn" (click)="closeExportModal()">Cancel</button>
+              <button class="export-pay-btn"
+                [disabled]="exportProcessing()"
+                (click)="initiateRazorpayPayment()">
+                @if (exportProcessing()) {
+                  <span class="btn-spinner"></span>
+                  Processing...
+                } @else {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+                  Pay ₹49 &amp; Export {{ exportFormat() === 'csv' ? 'CSV' : 'PDF' }}
+                }
+              </button>
+            </div>
+            <p class="export-secure-note">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="#16a34a"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+              Secured by Razorpay · UPI, Cards, NetBanking accepted
+            </p>
+          </div>
+        }
+
+      </div>
+    </div>
+  }
+
   <!-- PREVIOUS ELECTIONS PAGE -->
   @if (showPreviousElections()) {
     <div class="prev-elec-page">
@@ -246,6 +386,13 @@
           <h2 class="detail-main-title">General Election to Assembly Constituencies — Previous Results</h2>
           <p class="prev-elec-sub">Select a state and election year to view historical results</p>
         </div>
+        @if (prevElecRecord()) {
+          <button class="detail-export-btn" (click)="openExportModal('prev')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+            Export Results
+            <span class="export-price-badge dark">₹49</span>
+          </button>
+        }
       </div>
 
       <!-- Filter Bar -->
@@ -610,10 +757,16 @@
               <span class="status-dot" [style.background]="getStatusColor(state)"></span>
               {{ t().countingInProgress }}
             </div>
-            <button class="details-btn" (click)="openDetails(state)">
-              {{ t().viewDetails }}
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
-            </button>
+            <div class="card-footer-actions">
+              <button class="export-card-btn" (click)="openExportModal('home'); $event.stopPropagation()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                Export ₹49
+              </button>
+              <button class="details-btn" (click)="openDetails(state)">
+                {{ t().viewDetails }}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+              </button>
+            </div>
           </div>
 
         </div>

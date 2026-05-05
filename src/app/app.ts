@@ -2,6 +2,12 @@ import { Component, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
+declare const Razorpay: any;
+
+const RAZORPAY_KEY = 'rzr_test_2839239902309203902';
+const EXPORT_PRICE_INR = 49;
+const EXPORT_PRICE_PAISE = EXPORT_PRICE_INR * 100;
+
 export interface Constituency {
   name: string;
   candidateName: string;
@@ -646,6 +652,12 @@ export class App implements OnInit, OnDestroy {
   prevElecState = signal<string>('');
   prevElecYear = signal<string>('');
 
+  showExportModal = signal<boolean>(false);
+  exportFormat = signal<'csv' | 'pdf'>('csv');
+  exportContext = signal<'home' | 'detail' | 'prev'>('home');
+  exportPaymentDone = signal<boolean>(false);
+  exportProcessing = signal<boolean>(false);
+
   private timerInterval: ReturnType<typeof setInterval> | null = null;
 
   languages: Language[] = [
@@ -934,5 +946,181 @@ export class App implements OnInit, OnDestroy {
 
   prevElecBarWidth(party: PrevElecParty, rec: PrevElecRecord): number {
     return rec.totalSeats > 0 ? Math.round((party.won / rec.totalSeats) * 100) : 0;
+  }
+
+  openExportModal(context: 'home' | 'detail' | 'prev') {
+    this.exportContext.set(context);
+    this.exportFormat.set('csv');
+    this.exportPaymentDone.set(false);
+    this.exportProcessing.set(false);
+    this.showExportModal.set(true);
+  }
+
+  closeExportModal() {
+    this.showExportModal.set(false);
+    this.exportProcessing.set(false);
+  }
+
+  initiateRazorpayPayment() {
+    this.exportProcessing.set(true);
+    const fmt = this.exportFormat();
+    const ctx = this.exportContext();
+
+    let description = 'Export Election Results';
+    if (fmt === 'pdf') description = 'Export Election Results as PDF';
+    if (fmt === 'csv') description = 'Export Election Results as CSV';
+
+    const options = {
+      key: RAZORPAY_KEY,
+      amount: EXPORT_PRICE_PAISE,
+      currency: 'INR',
+      name: 'VotersView',
+      description,
+      image: '',
+      handler: (response: any) => {
+        this.exportProcessing.set(false);
+        this.exportPaymentDone.set(true);
+        setTimeout(() => {
+          this.performExport(fmt, ctx);
+          this.closeExportModal();
+        }, 800);
+      },
+      modal: {
+        ondismiss: () => {
+          this.exportProcessing.set(false);
+        }
+      },
+      prefill: { name: '', email: '', contact: '' },
+      notes: { context: ctx, format: fmt },
+      theme: { color: '#1a3a6b' }
+    };
+
+    try {
+      const rzp = new Razorpay(options);
+      rzp.on('payment.failed', () => {
+        this.exportProcessing.set(false);
+      });
+      rzp.open();
+    } catch (e) {
+      this.exportProcessing.set(false);
+      alert('Razorpay could not be loaded. Please check your internet connection.');
+    }
+  }
+
+  performExport(fmt: 'csv' | 'pdf', ctx: 'home' | 'detail' | 'prev') {
+    if (fmt === 'csv') this.exportCSV(ctx);
+    else this.exportPDF(ctx);
+  }
+
+  private exportCSV(ctx: 'home' | 'detail' | 'prev') {
+    let rows: string[][] = [];
+    let filename = 'votersview-results.csv';
+
+    if (ctx === 'home') {
+      rows.push(['State', 'Total Seats', 'Majority Mark', 'Party', 'Won', 'Leading', 'Total']);
+      for (const s of this.filteredStates()) {
+        for (const p of s.parties) {
+          rows.push([s.state, String(s.totalSeats), String(s.majorityMark), p.name, String(p.won), String(p.leading), String(p.won + p.leading)]);
+        }
+      }
+      filename = 'votersview-general-elections-may2026.csv';
+    } else if (ctx === 'detail') {
+      const state = this.selectedState();
+      if (!state) return;
+      rows.push(['Constituency', 'Candidate', 'Party', 'Votes', 'Margin', 'Status']);
+      for (const c of this.detailConstituencies()) {
+        rows.push([c.name, c.candidateName, c.partyName, String(c.votes), String(c.margin), c.status]);
+      }
+      filename = `votersview-${state.state.toLowerCase().replace(/ /g, '-')}-constituencies.csv`;
+    } else {
+      const rec = this.prevElecRecord();
+      if (!rec) return;
+      rows.push(['State', 'Year', 'Total Seats', 'Majority Mark', 'Winner', 'Party', 'Seats Won', 'Vote Share %']);
+      for (const p of rec.parties) {
+        rows.push([rec.state, String(rec.year), String(rec.totalSeats), String(rec.majorityMark), rec.winner, p.name, String(p.won), String(p.voteShare)]);
+      }
+      filename = `votersview-${rec.state.toLowerCase().replace(/ /g, '-')}-${rec.year}.csv`;
+    }
+
+    const csv = rows.map(r => r.map(cell => `"${cell.replace(/"/g, '""')}"`).join(',')).join('\n');
+    this.downloadFile(csv, filename, 'text/csv;charset=utf-8;');
+  }
+
+  private exportPDF(ctx: 'home' | 'detail' | 'prev') {
+    let title = '';
+    let tableHTML = '';
+
+    if (ctx === 'home') {
+      title = 'General Elections to Assembly Constituencies — May 2026 Results';
+      tableHTML = `<table><thead><tr><th>State</th><th>Total Seats</th><th>Party</th><th>Won</th><th>Leading</th><th>Total</th></tr></thead><tbody>`;
+      for (const s of this.filteredStates()) {
+        for (const p of s.parties) {
+          tableHTML += `<tr><td>${s.state}</td><td>${s.totalSeats}</td><td>${p.name}</td><td class="num">${p.won}</td><td class="num">${p.leading}</td><td class="num bold">${p.won + p.leading}</td></tr>`;
+        }
+      }
+      tableHTML += `</tbody></table>`;
+    } else if (ctx === 'detail') {
+      const state = this.selectedState();
+      if (!state) return;
+      title = `${state.state} — Constituency-wise Results — May 2026`;
+      tableHTML = `<table><thead><tr><th>Constituency</th><th>Candidate</th><th>Party</th><th>Votes</th><th>Margin</th><th>Status</th></tr></thead><tbody>`;
+      for (const c of this.detailConstituencies()) {
+        const color = c.status === 'Won' ? '#16a34a' : '#f97316';
+        tableHTML += `<tr><td>${c.name}</td><td>${c.candidateName}</td><td>${c.partyName}</td><td class="num">${c.votes.toLocaleString()}</td><td class="num">${c.margin.toLocaleString()}</td><td><span style="background:${color};color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">${c.status}</span></td></tr>`;
+      }
+      tableHTML += `</tbody></table>`;
+    } else {
+      const rec = this.prevElecRecord();
+      if (!rec) return;
+      title = `${rec.state} — ${rec.year} Assembly Election Results`;
+      tableHTML = `<table><thead><tr><th>Party</th><th>Seats Won</th><th>Vote Share</th></tr></thead><tbody>`;
+      for (const p of rec.parties) {
+        tableHTML += `<tr><td>${p.name}</td><td class="num bold">${p.won}</td><td class="num">${p.voteShare}%</td></tr>`;
+      }
+      tableHTML += `</tbody></table>`;
+    }
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title><style>
+      *{margin:0;padding:0;box-sizing:border-box}
+      body{font-family:'Segoe UI',Arial,sans-serif;padding:32px;color:#1e293b;font-size:13px}
+      .header{border-bottom:3px solid #1a3a6b;padding-bottom:16px;margin-bottom:24px}
+      .logo{font-size:22px;font-weight:900;color:#1a3a6b;letter-spacing:-0.5px}
+      .logo span{color:#f97316}
+      h1{font-size:16px;font-weight:700;color:#1e293b;margin-top:8px}
+      .meta{font-size:11px;color:#64748b;margin-top:4px}
+      table{width:100%;border-collapse:collapse;margin-top:8px}
+      th{background:#1a3a6b;color:#fff;padding:8px 10px;text-align:left;font-size:12px;font-weight:600}
+      td{padding:7px 10px;border-bottom:1px solid #e2e8f0;font-size:12px}
+      tr:nth-child(even) td{background:#f8fafc}
+      .num{text-align:right}
+      .bold{font-weight:700}
+      .footer{margin-top:24px;font-size:10px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:12px}
+      .watermark{color:#f97316;font-weight:700}
+      @media print{body{padding:20px}}
+    </style></head><body>
+      <div class="header">
+        <div class="logo">Voters<span>View</span></div>
+        <h1>${title}</h1>
+        <div class="meta">Generated on ${new Date().toLocaleString('en-IN')} &nbsp;|&nbsp; VotersView Election Results Portal</div>
+      </div>
+      ${tableHTML}
+      <div class="footer">Data sourced from VotersView &nbsp;|&nbsp; <span class="watermark">Exported via VotersView Premium</span> &nbsp;|&nbsp; For reference purposes only</div>
+      <script>window.onload=function(){window.print()}<\/script>
+    </body></html>`;
+
+    const win = window.open('', '_blank');
+    if (win) { win.document.write(html); win.document.close(); }
+  }
+
+  private downloadFile(content: string, filename: string, mimeType: string) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 }
