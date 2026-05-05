@@ -30,48 +30,17 @@
   gap: 20px;
 }
 
-.eci-logo {
+.brand-logo {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
-.logo-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.logo-hindi {
-  font-family: 'Noto Sans Devanagari', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: #fbbf24;
-  line-height: 1.3;
-}
-
-.logo-english {
-  font-size: 11px;
-  color: rgba(255,255,255,0.85);
-  letter-spacing: 0.5px;
-}
-
-.logo-divider {
-  width: 1px;
-  height: 40px;
-  background: rgba(255,255,255,0.2);
-}
-
-.ecinet-logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.ecinet-text {
-  font-size: 20px;
+.brand-name {
+  font-size: 24px;
   font-weight: 800;
   color: white;
-  letter-spacing: 2px;
+  letter-spacing: -0.5px;
 }
 
 .header-nav {
