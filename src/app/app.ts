@@ -82,7 +82,7 @@ const TRANSLATIONS: Record<LangCode, Translations> = {
     majorityMark: 'Majority Mark',
     allRightsReserved: '© 2026 VotersView. All rights reserved.',
     dataUpdated: 'Data is updated in real-time from Returning Officers at Counting Centres.',
-    states: { KERALA: 'KERALA', PUDUCHERRY: 'PUDUCHERRY', 'TAMIL NADU': 'TAMIL NADU', MAHARASHTRA: 'MAHARASHTRA' }
+    states: { ASSAM: 'ASSAM', KERALA: 'KERALA', PUDUCHERRY: 'PUDUCHERRY', 'TAMIL NADU': 'TAMIL NADU', 'WEST BENGAL': 'WEST BENGAL', MAHARASHTRA: 'MAHARASHTRA' }
   },
   hi: {
     home: 'होम', refresh: 'रिफ्रेश',
@@ -115,7 +115,7 @@ const TRANSLATIONS: Record<LangCode, Translations> = {
     majorityMark: 'बहुमत सीमा',
     allRightsReserved: '© 2026 VotersView. सर्वाधिकार सुरक्षित।',
     dataUpdated: 'डेटा गणना केंद्रों के रिटर्निंग अधिकारियों से वास्तविक समय में अपडेट किया जाता है।',
-    states: { KERALA: 'केरल', PUDUCHERRY: 'पुदुच्चेरी', 'TAMIL NADU': 'तमिलनाडु', MAHARASHTRA: 'महाराष्ट्र' }
+    states: { ASSAM: 'असम', KERALA: 'केरल', PUDUCHERRY: 'पुदुच्चेरी', 'TAMIL NADU': 'तमिलनाडु', 'WEST BENGAL': 'पश्चिम बंगाल', MAHARASHTRA: 'महाराष्ट्र' }
   },
   ta: {
     home: 'முகப்பு', refresh: 'புதுப்பி',
@@ -148,7 +148,7 @@ const TRANSLATIONS: Record<LangCode, Translations> = {
     majorityMark: 'பெரும்பான்மை எல்லை',
     allRightsReserved: '© 2026 VotersView. அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.',
     dataUpdated: 'தரவு எண்ணிக்கை மையங்களில் உள்ள திரும்பும் அதிகாரிகளிடமிருந்து நேரடியாக புதுப்பிக்கப்படுகிறது.',
-    states: { KERALA: 'கேரளா', PUDUCHERRY: 'புதுச்சேரி', 'TAMIL NADU': 'தமிழ்நாடு', MAHARASHTRA: 'மகாராஷ்டிரா' }
+    states: { ASSAM: 'அசாம்', KERALA: 'கேரளா', PUDUCHERRY: 'புதுச்சேரி', 'TAMIL NADU': 'தமிழ்நாடு', 'WEST BENGAL': 'மேற்கு வங்காளம்', MAHARASHTRA: 'மகாராஷ்டிரா' }
   },
   ml: {
     home: 'ഹോം', refresh: 'പുതുക്കുക',
@@ -181,7 +181,7 @@ const TRANSLATIONS: Record<LangCode, Translations> = {
     majorityMark: 'ഭൂരിപക്ഷ അടയാളം',
     allRightsReserved: '© 2026 VotersView. എല്ലാ അവകാശങ്ങളും നിക്ഷിപ്തം.',
     dataUpdated: 'എണ്ണൽ കേന്ദ്രങ്ങളിലെ റിട്ടേണിംഗ് ഓഫീസർമാരിൽ നിന്ന് തത്സമയം ഡാറ്റ അപ്ഡേറ്റ് ചെയ്യുന്നു.',
-    states: { KERALA: 'കേരളം', PUDUCHERRY: 'പോണ്ടിച്ചേരി', 'TAMIL NADU': 'തമിഴ്‌നാട്', MAHARASHTRA: 'മഹാരാഷ്ട്ര' }
+    states: { ASSAM: 'അസം', KERALA: 'കേരളം', PUDUCHERRY: 'പോണ്ടിച്ചേരി', 'TAMIL NADU': 'തമിഴ്‌നാട്', 'WEST BENGAL': 'പശ്ചിമ ബംഗാൾ', MAHARASHTRA: 'മഹാരാഷ്ട്ര' }
   }
 };
 
@@ -234,6 +234,18 @@ export class App implements OnInit, OnDestroy {
 
   generalElections: StateResult[] = [
     {
+      state: 'ASSAM', totalSeats: 126, majorityMark: 64,
+      headerColor: '#b91c1c',
+      headerGradient: 'linear-gradient(135deg, #b91c1c 0%, #ef4444 100%)',
+      parties: [
+        { name: 'BJP Alliance (NDA)', shortName: 'BJP+',  color: '#f97316', leading: 5, won: 62 },
+        { name: 'AIUDF Alliance',     shortName: 'AIUDF', color: '#16a34a', leading: 3, won: 28 },
+        { name: 'INC (Congress)',     shortName: 'INC',   color: '#2563eb', leading: 2, won: 15 },
+        { name: 'AGP',               shortName: 'AGP',   color: '#7c3aed', leading: 1, won: 4  },
+        { name: 'Others',            shortName: 'OTH',   color: '#6b7280', leading: 0, won: 2  },
+      ]
+    },
+    {
       state: 'KERALA', totalSeats: 140, majorityMark: 71,
       headerColor: '#b45309',
       headerGradient: 'linear-gradient(135deg, #b45309 0%, #d97706 100%)',
@@ -267,6 +279,18 @@ export class App implements OnInit, OnDestroy {
         { name: 'BJP',            shortName: 'BJP',   color: '#f97316', leading: 3,  won: 10  },
         { name: 'DMDK',           shortName: 'DMDK',  color: '#7c3aed', leading: 1,  won: 3   },
         { name: 'Others',         shortName: 'OTH',   color: '#6b7280', leading: 1,  won: 4   },
+      ]
+    },
+    {
+      state: 'WEST BENGAL', totalSeats: 294, majorityMark: 148,
+      headerColor: '#1d4ed8',
+      headerGradient: 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)',
+      parties: [
+        { name: 'AITC (Trinamool Congress)', shortName: 'AITC',  color: '#16a34a', leading: 10, won: 162 },
+        { name: 'BJP',                       shortName: 'BJP',   color: '#f97316', leading: 5,  won: 80  },
+        { name: 'Left Front',                shortName: 'LF',    color: '#dc2626', leading: 2,  won: 14  },
+        { name: 'INC (Congress)',             shortName: 'INC',   color: '#2563eb', leading: 1,  won: 4   },
+        { name: 'ISF / Others',              shortName: 'OTH',   color: '#6b7280', leading: 0,  won: 3   },
       ]
     }
   ];
