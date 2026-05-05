@@ -990,6 +990,439 @@
   color: rgba(255,255,255,0.35);
 }
 
+/* ===== DETAIL PAGE ===== */
+.detail-page {
+  flex: 1;
+  background: #f0f4f8;
+  padding: 0 0 32px;
+}
+
+.detail-subheader {
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 16px 32px;
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #1a3a6b;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.back-btn:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+}
+
+.detail-title-block {
+  flex: 1;
+}
+
+.detail-main-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 6px;
+  line-height: 1.3;
+}
+
+.detail-state-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.detail-state-name {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 4px;
+}
+
+.detail-ac-count {
+  font-size: 18px;
+  font-weight: 500;
+  color: #475569;
+}
+
+/* Party Summary Tiles */
+.detail-tiles-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 24px 32px;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.detail-tile {
+  border-radius: 12px;
+  padding: 16px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 100px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.tile-short {
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.95);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.tile-total {
+  font-size: 36px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+}
+
+/* Two-panel layout */
+.detail-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 24px 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.detail-panel {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  padding: 20px 24px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+
+.panel-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* Party detail table */
+.party-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.party-detail-table thead tr {
+  background: #f8fafc;
+}
+
+.th-party {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.th-num {
+  text-align: right;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.party-detail-row {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.1s;
+}
+
+.party-detail-row:hover {
+  background: #f8fafc;
+}
+
+.td-party {
+  padding: 11px 12px;
+  font-size: 13px;
+  color: #334155;
+  font-weight: 500;
+}
+
+.td-num {
+  padding: 11px 12px;
+  font-size: 13px;
+  text-align: right;
+  color: #64748b;
+}
+
+.won-val {
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+.total-val {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.totals-detail-row {
+  background: #f1f5f9;
+  border-top: 2px solid #e2e8f0;
+}
+
+.totals-detail-row .td-party,
+.totals-detail-row .td-num {
+  font-size: 14px;
+  color: #1e293b;
+  padding: 12px 12px;
+}
+
+/* Constituency panel */
+.panel-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.panel-header-row .panel-title {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.constituency-select {
+  padding: 7px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #334155;
+  background: #f8fafc;
+  cursor: pointer;
+  min-width: 180px;
+  max-width: 220px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.constituency-select:focus {
+  border-color: #1a3a6b;
+}
+
+/* Constituency detail card */
+.constituency-detail-card {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.cdc-header {
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cdc-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.cdc-status {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cdc-body {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cdc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 10px;
+}
+
+.cdc-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.cdc-label {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.cdc-val {
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Constituency visual (no selection) */
+.constituency-visual {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 8px 0;
+}
+
+.cv-bar-wrap {
+  position: relative;
+  padding-bottom: 24px;
+}
+
+.cv-bar {
+  display: flex;
+  height: 40px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.cv-segment {
+  transition: opacity 0.2s;
+}
+
+.cv-segment:hover {
+  opacity: 0.85;
+}
+
+.cv-majority-mark {
+  position: absolute;
+  bottom: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cv-mark-line {
+  width: 2px;
+  height: 48px;
+  background: #1e293b;
+  border-left: 2px dashed #1e293b;
+}
+
+.cv-mark-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1e293b;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 2px;
+}
+
+.cv-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+}
+
+.cv-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cv-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.cv-party-name {
+  font-size: 13px;
+  color: #475569;
+  font-weight: 600;
+}
+
+.cv-party-total {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.cv-hint {
+  font-size: 12px;
+  color: #94a3b8;
+  text-align: center;
+  font-style: italic;
+  margin: 0;
+}
+
+/* Detail footer bar */
+.detail-footer-bar {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 12px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 4px;
+}
+
+.detail-counted {
+  color: #334155;
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .header-inner { padding: 10px 16px; }
@@ -1013,6 +1446,18 @@
   }
 
   .legend-inner { gap: 14px; }
+
+  /* Detail page mobile */
+  .detail-subheader { padding: 14px 16px; flex-direction: column; gap: 12px; }
+  .detail-main-title { font-size: 14px; }
+  .detail-state-name { font-size: 18px; }
+  .detail-tiles-wrap { padding: 16px; gap: 10px; }
+  .detail-tile { padding: 12px 18px; min-width: 80px; }
+  .tile-total { font-size: 28px; }
+  .detail-panels { grid-template-columns: 1fr; padding: 16px; }
+  .detail-footer-bar { padding: 12px 16px; flex-direction: column; gap: 6px; align-items: flex-start; }
+  .panel-header-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .constituency-select { max-width: 100%; width: 100%; }
 }
 
 @media (max-width: 480px) {

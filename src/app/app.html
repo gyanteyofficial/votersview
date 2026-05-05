@@ -72,6 +72,160 @@
     </div>
   }
 
+  <!-- DETAIL PAGE -->
+  @if (selectedState(); as state) {
+    <div class="detail-page">
+
+      <!-- Detail Sub-header -->
+      <div class="detail-subheader">
+        <button class="back-btn" (click)="closeDetails()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+          Back
+        </button>
+        <div class="detail-title-block">
+          <h2 class="detail-main-title">General Election to Assembly Constituencies: Trends &amp; Results May-2026</h2>
+          <div class="detail-state-title">
+            <span class="detail-state-name" [style.color]="state.headerColor">{{ getStateName(state.state) }}</span>
+            <span class="detail-ac-count">(Total AC : {{ state.totalSeats }})</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Party Summary Tiles -->
+      <div class="detail-tiles-wrap">
+        @for (party of state.parties; track party.shortName) {
+          <div class="detail-tile" [style.background]="party.color">
+            <span class="tile-short">{{ party.shortName }}</span>
+            <span class="tile-total">{{ party.leading + party.won }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- Two-panel layout -->
+      <div class="detail-panels">
+
+        <!-- Left: Party Wise Results -->
+        <div class="detail-panel detail-panel-left">
+          <h3 class="panel-title">Party Wise Results</h3>
+          <table class="party-detail-table">
+            <thead>
+              <tr>
+                <th class="th-party">Party</th>
+                <th class="th-num">Won</th>
+                <th class="th-num">Leading</th>
+                <th class="th-num">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (party of state.parties; track party.shortName) {
+                <tr class="party-detail-row">
+                  <td class="td-party">{{ party.name }}</td>
+                  <td class="td-num won-val">{{ party.won }}</td>
+                  <td class="td-num">{{ party.leading }}</td>
+                  <td class="td-num total-val">{{ party.leading + party.won }}</td>
+                </tr>
+              }
+              <tr class="totals-detail-row">
+                <td class="td-party"><strong>Total</strong></td>
+                <td class="td-num won-val"><strong>{{ getTotalWon(state) }}</strong></td>
+                <td class="td-num"><strong>{{ getTotalLeading(state) }}</strong></td>
+                <td class="td-num total-val"><strong>{{ getTotalWon(state) + getTotalLeading(state) }}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Right: Constituency Wise Results -->
+        <div class="detail-panel detail-panel-right">
+          <div class="panel-header-row">
+            <h3 class="panel-title">Constituency Wise Results</h3>
+            <select class="constituency-select"
+              [ngModel]="selectedConstituencyName()"
+              (ngModelChange)="selectedConstituencyName.set($event)">
+              <option value="">Select Constituency</option>
+              @for (c of detailConstituencies(); track c.name) {
+                <option [value]="c.name">{{ c.name }}</option>
+              }
+            </select>
+          </div>
+
+          @if (selectedConstituencyName()) {
+            @for (c of detailConstituencies(); track c.name) {
+              @if (c.name === selectedConstituencyName()) {
+                <div class="constituency-detail-card">
+                  <div class="cdc-header" [style.background]="c.partyColor">
+                    <span class="cdc-name">{{ c.name }}</span>
+                    <span class="cdc-status" [class.status-won]="c.status === 'Won'" [class.status-leading]="c.status === 'Leading'">{{ c.status }}</span>
+                  </div>
+                  <div class="cdc-body">
+                    <div class="cdc-row">
+                      <span class="cdc-label">Party</span>
+                      <span class="cdc-val" [style.color]="c.partyColor"><strong>{{ c.partyName }}</strong></span>
+                    </div>
+                    <div class="cdc-row">
+                      <span class="cdc-label">Votes</span>
+                      <span class="cdc-val">{{ c.votes | number }}</span>
+                    </div>
+                    <div class="cdc-row">
+                      <span class="cdc-label">Margin</span>
+                      <span class="cdc-val">{{ c.margin | number }}</span>
+                    </div>
+                    <div class="cdc-row">
+                      <span class="cdc-label">Status</span>
+                      <span class="cdc-val status-badge" [style.background]="c.status === 'Won' ? '#16a34a' : '#f97316'">{{ c.status }}</span>
+                    </div>
+                  </div>
+                </div>
+              }
+            }
+          } @else {
+            <!-- Seat distribution visual -->
+            <div class="constituency-visual">
+              <div class="cv-bar-wrap">
+                <div class="cv-bar">
+                  @for (party of state.parties; track party.shortName) {
+                    @if ((party.leading + party.won) > 0) {
+                      <div class="cv-segment"
+                        [style.flex]="party.leading + party.won"
+                        [style.background]="party.color"
+                        [title]="party.shortName + ': ' + (party.leading + party.won)">
+                      </div>
+                    }
+                  }
+                </div>
+                <div class="cv-majority-mark" [style.left.%]="(state.majorityMark / state.totalSeats) * 100">
+                  <div class="cv-mark-line"></div>
+                  <span class="cv-mark-label">{{ state.majorityMark }}</span>
+                </div>
+              </div>
+              <div class="cv-legend">
+                @for (party of state.parties; track party.shortName) {
+                  <div class="cv-legend-item">
+                    <span class="cv-dot" [style.background]="party.color"></span>
+                    <span class="cv-party-name">{{ party.shortName }}</span>
+                    <span class="cv-party-total" [style.color]="party.color">{{ party.leading + party.won }}</span>
+                  </div>
+                }
+              </div>
+              <p class="cv-hint">Select a constituency from the dropdown above to view detailed results.</p>
+            </div>
+          }
+        </div>
+
+      </div>
+
+      <!-- Detail Totals Footer -->
+      <div class="detail-footer-bar">
+        <span>Last Updated at <strong>{{ lastUpdated() }}</strong></span>
+        <span class="detail-counted">Counted: <strong>{{ getTotalWon(state) + getTotalLeading(state) }}</strong> / {{ state.totalSeats }} seats</span>
+      </div>
+
+    </div>
+  }
+
+  <!-- HOME CONTENT (hidden when detail page is open) -->
+  @if (!selectedState()) {
+
   <!-- HERO SECTION -->
   <section class="hero">
     <div class="hero-inner">
@@ -251,7 +405,7 @@
               <span class="status-dot" [style.background]="getStatusColor(state)"></span>
               {{ t().countingInProgress }}
             </div>
-            <button class="details-btn">
+            <button class="details-btn" (click)="openDetails(state)">
               {{ t().viewDetails }}
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
             </button>
@@ -280,6 +434,8 @@
       </div>
     </div>
   </div>
+
+  } <!-- end @if (!selectedState()) -->
 
   <!-- FOOTER -->
   <footer class="footer">

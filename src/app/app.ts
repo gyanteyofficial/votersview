@@ -2,6 +2,126 @@ import { Component, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
+export interface Constituency {
+  name: string;
+  partyShortName: string;
+  partyColor: string;
+  partyName: string;
+  votes: number;
+  margin: number;
+  status: 'Won' | 'Leading';
+}
+
+const CONSTITUENCY_NAMES: Record<string, string[]> = {
+  'ASSAM': [
+    'Abhayapuri North','Abhayapuri South','Agomoni','Agyathuri','Algapur','Baitamari','Barkhetri','Barobazar',
+    'Barpathar','Batadrava','Bey','Bhawanipur','Bilasipara East','Bilasipara West','Binnakandi','Bokajan',
+    'Boko','Bongaigaon','Borkhola','Chaygaon','Chenga','Dakhin Salmara','Dhemaji','Digboi','Diphlu',
+    'Dispur','Doboka','Doomdooma','Duliajan','Gauripur','Gohpur','Golaghat','Golokganj','Gossaigaon',
+    'Guwahati East','Guwahati West','Haflong','Hailakandi','Hojai','Jagiroad','Jalukbari','Jaleswar',
+    'Jorhat','Kaliabor','Kampur','Karimganj North','Karimganj South','Khumtai','Kokrajhar East',
+    'Kokrajhar West','Laharighat','Lakhipur','Lakhimpur','Lanka','Lumding','Majuli','Mazbat',
+    'Moran','Nagaon','Nalbari','Naoboicha','Nowgong','Palasbari','Patacharkuchi','Pub Nalbari',
+    'Rangapara','Ratabari','Rupohihat','Sapatgram','Sarbhog','Sibsagar','Silchar','Sonai',
+    'Sonari','Soraikela','Sorbhog','Tezpur','Tihu','Titabor','Udalguri','Udharbond',
+    'Barpeta Road','Barpeta','Puthia','Senchowa','Naginimara','Nazira','Mahmora','Thowra',
+    'Amguri','Sibsagar North','Naharkatia','Mekliganj','Pathsala','North Guwahati','South Guwahati',
+    'Harisinga','Ghiladhari','Raha','Samaguri','Koliabor','Jamunamukh','Hojai North','Lumding North',
+    'Sonai East','Jiribam','Churachandpur','Oinam','Thoubal','Sagolband','Keishamthong','Heingang',
+    'Wangkhei','Singjamei','Yaiskul','Thongju','Khurai','Andro','Lamlai','Uripok',
+  ],
+  'KERALA': [
+    'Manjeshwar','Kasaragod','Udma','Kanhangad','Trikaripur','Payyannur','Kalliasseri','Thalassery',
+    'Kuthuparamba','Mattannur','Peravoor','Iritty','Kannur','Dharmadom','Thalipparamba','Irikkur',
+    'Azhikode','Rajapur','Sreekandapuram','Payam','Vadakara','Kuttiadi','Nadapuram','Koyilandy',
+    'Perambra','Elathur','Kozhikode North','Kozhikode South','Beypore','Kunnamangalam','Koduvally',
+    'Thiruvambady','Kondotty','Eranad','Manjeri','Tirur','Tanur','Tirurangadi','Vengara',
+    'Malappuram','Mankada','Perinthalmanna','Mannarkkad','Malampuzha','Palakkad','Tarur','Chittur',
+    'Nemmara','Alathur','Chelakkara','Thrithala','Pattambi','Shornur','Ottapalam','Kongad',
+    'Thrissur','Nattika','Kaipamangalam','Guruvayur','Manalur','Kunnamkulam','Wadakkanchery','Ollur',
+    'Chalakudy','Irinjalakuda','Puthukkad','Mukundapuram','Vaikom','Ettumanoor','Kottayam','Puthuppally',
+    'Kaduthuruthy','Vaikom East','Aruvikkara','Neyyattinkara','Kazhakootam','Vattiyoorkavu',
+    'Thiruvananthapuram','Nemom','Attingal','Kilimanoor','Nedumangad','Vamanapuram','Aroor','Cherthala',
+    'Alappuzha','Ambalappuzha','Chengannur','Mavelikkara','Kayamkulam','Haripad','Kuttanad','Mavelikara',
+    'Karunagappally','Kollam','Eravipuram','Kunnathur','Punalur','Chadayamangalam','Kundara','Elampalloor',
+    'Ernakulam','Thrippunithura','Aluva','Kalady','Perumbavoor','Angamaly','Paravur','Vypen',
+    'Kothamangalam','Muvattupuzha','Kunnathunad','North Paravur','Piravom','Kovalam','Thiruvananthapuram East',
+  ],
+  'PUDUCHERRY': [
+    'Ariyankuppam','Bahour','Indira Nagar','Kamaraj Nagar','Kattumannarkoil','Lawspet','Mangalam',
+    'Mannadipet','Mahe','Mudaliarpet','Nellithope','Oulgaret','Raj Bhavan','Raj Nivas',
+    'Rajiv Nagar','Thattanchavady','Thirubuvanai','Oupalam','Karikkal','Thirumalairajan Nagar',
+    'Vazhudavur','Villianur','Muthialpet','Orleanpet','Rajiv Gandhi Nagar','Embalam','Nedungadu',
+    'Maducarai','Yanam Nagar','Sedarapet',
+  ],
+  'TAMIL NADU': [
+    'Gummidipoondi','Ponneri','Tiruttani','Sholingur','Arakkonam','Ranipet','Arcot','Vellore',
+    'Anaikattu','Kilvaithinankuppam','Gudiyatham','Vaniyambadi','Ambur','Jolarpet','Tirupattur',
+    'Uthangarai','Bargur','Krishnagiri','Veppanahalli','Hosur','Thalli','Palacodu','Pennagaram',
+    'Dharmapuri','Pappireddipatti','Harur','Mettur','Edappadi','Rasipuram','Sankari','Omalur',
+    'Mahal','Salem','Attur','Yercaud','Gangavalli','Kallakurichi','Kalvarayan Hills','Tirukoilur',
+    'Ulundurpet','Rishivandiyam','Sankarapuram','Viluppuram','Vikravandi','Mailam','Tindivanam',
+    'Vanur','Pondicherry','Cuddalore','Panruti','Kurinjipadi','Bhuvanagiri','Chidambaram','Kattumannarkoil',
+    'Srimushnam','Vriddhachalam','Neyveli','Vridhachalam','Tittakudi','Lalgudi','Ariyalur','Senthurai',
+    'Jayamkondam','Perambalur','Kunnam','Madurai North','Madurai East','Madurai South','Madurai West',
+    'Madurai Central','Thiruparankundram','Thirumangalam','Usilampatti','Andipatti','Nilakottai',
+    'Natham','Dindigul','Vedasandur','Aravakurichi','Karur','Krishnarayapuram','Kulithalai','Manapparai',
+    'Srirangam','Tiruverumbur','Thiruvaiyaru','Papanasam','Thanjavur','Orathanadu','Pattukkottai',
+    'Peravurani','Kumbakonam','Papanasam North','Thiruvidaimarudur','Nagapattinam','Kilvelur','Vedaranyam',
+    'Mayiladuthurai','Sirkazhi','Chidambaram North','Vadalur','Virudhachalam','Gangaikondan','Tenkasi',
+    'Sankarankovil','Radhapuram','Tiruchendur','Srivaikuntam','Ottapidaram','Kovilpatti','Vilathikulam',
+    'Thoothukkudi','Tisayanvilai','Nanguneri','Cheranmahadevi','Ambasamudram','Palayamkottai','Tirunelveli',
+    'Kalakad','Vikramasingapuram','Tirupur North','Tirupur South','Palladam','Avinashi','Tirupur Central',
+    'Uthukuli','Udumalpet','Pollachi','Valparai','Sulur','Coimbatore North','Thondamuthur','Coimbatore South',
+    'Singanallur','Kinathukadavu','Mettupalayam','Gudalur','Ooty','Coonoor','Mettuppalayam',
+    'Erode East','Erode West','Bhavani','Perundurai','Gobichettipalayam','Anthiyur','Bhavanisagar',
+    'Udhagamandalam','Gudalur North','Pandalur','Virudhunagar','Sivakasi','Sattur','Aruppukkottai',
+    'Rajapalayam','Srivilliputhur','Watrap','Tiruchuli','Paramakudi','Ramanathapuram','Mudukulathur',
+    'Kadaladi','Alagankulam','Tiruppattur TN','Natrampalli','Vaniyambadi North','Ambur South',
+    'Salem North','Salem South','Namakkal','Tiruchengode','Rasipuram South','Gobichettipalayam East',
+    'Thammampatti','Sendamangalam','Mohanur','Paramathi Velur','Rasipuram North','Mayavaram',
+    'Poonamallee','Avadi','Ambattur','Maduravoyal','Virugambakkam','Saidapet','Guindy','Chepauk',
+    'Chennai Central','Kolathur','Villivakkam','Thiru Vi Ka Nagar','Egmore','Royapuram',
+    'Harbour','Chepauk Thiruvallikeni','Dr Radhakrishnan Nagar','Perambur','Kolathur North',
+  ],
+  'WEST BENGAL': [
+    'Coochbehar Uttar','Coochbehar Dakshin','Sitalkuchi','Sitai','Dinhata','Natabari','Mathabhanga',
+    'Mekhliganj','Tufanganj','Maynaguri','Dhupguri','Falakata','Malbazar','Nagrakata','Jalpaiguri',
+    'Rajganj','Dabgram Phulbari','Matigara Naxalbari','Siliguri','Phansidewa','Chopra','Islampur',
+    'Goalpokhar','Chakulia','Karandighi','Hemtabad','Kaliyaganj','Raiganj','Itahar','Kushmandi',
+    'Kumarganj','Balurghat','Tapan','Gangarampur','Harirampur','Chanchal','Harishchandrapur',
+    'Maldah','Mothabari','Sujapur','Manikchak','Kaliachak','Englishbazar','Baishnabnagar',
+    'Farakka','Samserganj','Sagardighi','Lalgola','Raghunathganj','Suti','Jangipur',
+    'Murshidabad','Nabagram','Khargram','Berhampore','Naoda','Domkal','Jalangi','Bhagabangola',
+    'Rejinagar','Bharatpur','Kandi','Burwan','Katwa','Ausgram','Monteswar','Burdwan Uttar',
+    'Burdwan Dakshin','Raina','Jamalpur','Memari','Purbasthali Uttar','Purbasthali Dakshin','Kalna',
+    'Galsi','Bardhaman','Ketugram','Mangalkot','Dubrajpur','Suri','Sainthia','Mayureswar',
+    'Rampurhat','Hansan','Nalhati','Murarai','Bolpur','Nanoor','Labhpur','Rajnagar',
+    'Khoyrasole','Siuri','Onda','Chhatna','Bankura','Barjora','Indpur','Mejia',
+    'Gangajalghati','Ranibandh','Raipur','Taldangra','Khatra','Saltora','Arambag','Goghat',
+    'Khanakul','Pandua','Serampore','Chanditala','Jangipara','Haripal','Dhanekhali',
+    'Tarakeswar','Pursurah','Balagarh','Singur','Chunchura','Bhadreswar','Champdani',
+    'Sreerampur','Uttarpara','Salkia','Bally','Howrah Uttar','Howrah Madhya','Shibpur',
+    'Howrah Dakshin','Sankrail','Panchla','Uluberia Uttar','Uluberia Dakshin','Shyampur',
+    'Bagnan','Amta','Udaynarayanpur','Jagatballavpur','Domjur','Dum Dum Uttar','Dum Dum',
+    'Rajarhat Newtown','Bidhannagar','Rajarhat Gopalpur','Madhyamgram','Barasat','Deganga',
+    'Haroa','Minakhan','Sandeshkhali','Basirhat Uttar','Basirhat Dakshin','Hingalganj',
+    'Gosaba','Patharpratima','Kultali','Mathurapur','Jaynagar','Baruipur Purba','Baruipur Paschim',
+    'Sonarpur Uttar','Sonarpur Dakshin','Rajpur','Behala Purba','Behala Paschim','Maheshtala',
+    'Budge Budge','Metiabruz','Kolkata Port','Bhabanipur','Rashbehari','Ballygunge','Kasba',
+    'Jadavpur','Tollygunj','Regent Park','Chetla','Kalighat','Entally','Beliaghata','Jorasanko',
+    'Shyampukur','Maniktala','Kashipur Belgachia','Cossipur Sinthi','Chitpore','Bankra',
+    'Ghatal','Daspur','Khirpai','Chandrakona','Garbeta','Salbani','Medinipur','Narayangarh',
+    'Sabang','Pingla','Kharagpur','Dantan','Debra','Egra','Contai Uttar','Contai Dakshin',
+    'Ramnagar','Potashpur','Bhagabanpur','Panskura Purba','Panskura Paschim','Tamluk',
+    'Nandigram','Mahishadal','Nandakumar','Chandipur','Haldia','Sutahata','Moyna',
+    'Panskura','Bhimdoha','Contai','Rupnarayan','Ranaghat','Shantipur','Nadia','Kalyani',
+    'Chakdah','Krishnanagar Uttar','Krishnanagar Dakshin','Nabadwip','Santipur North','Chapra',
+    'Bongaon','Gaighata','Swarupnagar','Baduria','Habra','Amdanga','Barrackpur','Noapara',
+    'Jagatdal','Naihati','Bhatpara','Garulia','Khardah','Panihati','Kamarhati','Baranagar','Dum Dum North',
+  ],
+};
+
 export type LangCode = 'en' | 'hi' | 'ta' | 'ml';
 
 export interface Language {
@@ -216,6 +336,8 @@ export class App implements OnInit, OnDestroy {
   searchQuery = signal<string>('');
   currentLang = signal<LangCode>('en');
   langDropdownOpen = signal<boolean>(false);
+  selectedState = signal<StateResult | null>(null);
+  selectedConstituencyName = signal<string>('');
 
   private timerInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -405,4 +527,61 @@ export class App implements OnInit, OnDestroy {
     }
     return `${count} ${tr.results}`;
   }
+
+  openDetails(state: StateResult) {
+    this.selectedState.set(state);
+    this.selectedConstituencyName.set('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  closeDetails() {
+    this.selectedState.set(null);
+    this.selectedConstituencyName.set('');
+  }
+
+  getConstituencies(state: StateResult): Constituency[] {
+    const names = CONSTITUENCY_NAMES[state.state] ?? [];
+    const result: Constituency[] = [];
+    let idx = 0;
+    for (const party of state.parties) {
+      for (let w = 0; w < party.won; w++) {
+        if (idx >= names.length) break;
+        result.push({
+          name: names[idx++],
+          partyShortName: party.shortName,
+          partyColor: party.color,
+          partyName: party.name,
+          votes: 40000 + Math.floor(Math.random() * 60000),
+          margin: 500 + Math.floor(Math.random() * 20000),
+          status: 'Won',
+        });
+      }
+    }
+    for (const party of state.parties) {
+      for (let l = 0; l < party.leading; l++) {
+        if (idx >= names.length) break;
+        result.push({
+          name: names[idx++],
+          partyShortName: party.shortName,
+          partyColor: party.color,
+          partyName: party.name,
+          votes: 30000 + Math.floor(Math.random() * 40000),
+          margin: 100 + Math.floor(Math.random() * 5000),
+          status: 'Leading',
+        });
+      }
+    }
+    return result;
+  }
+
+  getSelectedConstituency(state: StateResult): Constituency | null {
+    const name = this.selectedConstituencyName();
+    if (!name) return null;
+    return this.getConstituencies(state).find(c => c.name === name) ?? null;
+  }
+
+  detailConstituencies = computed(() => {
+    const s = this.selectedState();
+    return s ? this.getConstituencies(s) : [];
+  });
 }
