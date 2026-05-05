@@ -251,6 +251,158 @@
   font-weight: 600;
 }
 
+/* ===== SEARCH ===== */
+.search-section {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 14px 24px;
+}
+
+.search-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  flex: 1;
+  min-width: 220px;
+  max-width: 480px;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.search-box:focus-within {
+  border-color: #1a3a6b;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(26,58,107,0.1);
+}
+
+.search-box.has-value {
+  border-color: #1a3a6b;
+  background: white;
+}
+
+.search-icon {
+  color: #9ca3af;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+.search-box:focus-within .search-icon {
+  color: #1a3a6b;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  background: none;
+  font-size: 14px;
+  color: #1f2937;
+  font-family: inherit;
+  outline: none;
+  min-width: 0;
+}
+
+.search-input::placeholder {
+  color: #b0bcc8;
+}
+
+.search-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e5e7eb;
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  color: #6b7280;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+  padding: 0;
+}
+
+.search-clear:hover {
+  background: #dc2626;
+  color: white;
+}
+
+.search-meta {
+  display: flex;
+  align-items: center;
+}
+
+.search-count {
+  font-size: 13px;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.search-count strong {
+  color: #1a3a6b;
+}
+
+.search-count.no-results {
+  color: #dc2626;
+}
+
+.search-count.no-results strong {
+  color: #dc2626;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  text-align: center;
+  gap: 12px;
+}
+
+.empty-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.empty-sub {
+  font-size: 13px;
+  color: #9ca3af;
+  max-width: 320px;
+  line-height: 1.6;
+}
+
+.empty-clear-btn {
+  margin-top: 8px;
+  background: #1a3a6b;
+  color: white;
+  border: none;
+  padding: 9px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+
+.empty-clear-btn:hover {
+  background: #0f2557;
+}
+
 /* ===== RESULTS ===== */
 .results-section {
   flex: 1;

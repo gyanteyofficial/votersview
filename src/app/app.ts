@@ -1,5 +1,6 @@
-import { Component, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 export interface PartyResult {
   name: string;
@@ -20,7 +21,7 @@ export interface StateResult {
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -29,6 +30,7 @@ export class App implements OnInit, OnDestroy {
   lastUpdated = signal<string>('07:36 AM On 04/05/2026');
   currentTime = signal<string>('');
   showDisclaimer = signal<boolean>(true);
+  searchQuery = signal<string>('');
 
   private timerInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -108,14 +110,33 @@ export class App implements OnInit, OnDestroy {
 
   setTab(tab: 'general' | 'bye') {
     this.activeTab.set(tab);
+    this.searchQuery.set('');
   }
 
   dismissDisclaimer() {
     this.showDisclaimer.set(false);
   }
 
+  onSearch(value: string) {
+    this.searchQuery.set(value);
+  }
+
+  clearSearch() {
+    this.searchQuery.set('');
+  }
+
   getActiveElections(): StateResult[] {
-    return this.activeTab() === 'general' ? this.generalElections : this.byeElections;
+    const all = this.activeTab() === 'general' ? this.generalElections : this.byeElections;
+    const q = this.searchQuery().trim().toLowerCase();
+    if (!q) return all;
+    return all.filter(s =>
+      s.state.toLowerCase().includes(q) ||
+      s.parties.some(p => p.name.toLowerCase().includes(q) || p.shortName.toLowerCase().includes(q))
+    );
+  }
+
+  hasNoResults(): boolean {
+    return this.getActiveElections().length === 0 && this.searchQuery().trim().length > 0;
   }
 
   getTotalLeading(state: StateResult): number {
