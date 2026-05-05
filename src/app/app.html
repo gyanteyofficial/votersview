@@ -55,6 +55,11 @@
           }
         </div>
 
+        <button class="nav-btn prev-elec-btn" [class.active-nav]="showPreviousElections()" (click)="openPreviousElections(); $event.stopPropagation()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+          Previous Elections
+        </button>
+
         <button class="nav-btn refresh-btn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
           {{ t().refresh }}
@@ -159,6 +164,10 @@
                   </div>
                   <div class="cdc-body">
                     <div class="cdc-row">
+                      <span class="cdc-label">Candidate</span>
+                      <span class="cdc-val"><strong>{{ c.candidateName }}</strong></span>
+                    </div>
+                    <div class="cdc-row">
                       <span class="cdc-label">Party</span>
                       <span class="cdc-val" [style.color]="c.partyColor"><strong>{{ c.partyName }}</strong></span>
                     </div>
@@ -223,8 +232,204 @@
     </div>
   }
 
+  <!-- PREVIOUS ELECTIONS PAGE -->
+  @if (showPreviousElections()) {
+    <div class="prev-elec-page">
+
+      <!-- Sub-header -->
+      <div class="detail-subheader">
+        <button class="back-btn" (click)="closePreviousElections()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+          Back
+        </button>
+        <div class="detail-title-block">
+          <h2 class="detail-main-title">General Election to Assembly Constituencies — Previous Results</h2>
+          <p class="prev-elec-sub">Select a state and election year to view historical results</p>
+        </div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="prev-elec-filter-bar">
+        <div class="prev-filter-inner">
+          <div class="prev-filter-group">
+            <label class="prev-filter-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+              State
+            </label>
+            <select class="prev-filter-select"
+              [ngModel]="prevElecState()"
+              (ngModelChange)="prevElecState.set($event); prevElecYear.set('')">
+              <option value="">— Select State —</option>
+              @for (s of prevElecAvailableStates(); track s) {
+                <option [value]="s">{{ s }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="prev-filter-divider"></div>
+
+          <div class="prev-filter-group" [class.disabled]="!prevElecState()">
+            <label class="prev-filter-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>
+              Year of Election
+            </label>
+            <select class="prev-filter-select"
+              [ngModel]="prevElecYear()"
+              (ngModelChange)="prevElecYear.set($event)"
+              [disabled]="!prevElecState()">
+              <option value="">— Select Year —</option>
+              @for (y of prevElecYearsForState(); track y) {
+                <option [value]="y">{{ y }}</option>
+              }
+            </select>
+          </div>
+
+          @if (prevElecState() && prevElecYear()) {
+            <button class="prev-filter-clear" (click)="prevElecState.set(''); prevElecYear.set('')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              Clear
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Results -->
+      @if (prevElecRecord(); as rec) {
+        <div class="prev-elec-results">
+
+          <!-- Result Header -->
+          <div class="prev-result-header" [style.background]="rec.headerGradient">
+            <div class="prev-result-title">
+              <span class="prev-result-state">{{ rec.state }}</span>
+              <span class="prev-result-year-badge">{{ rec.year }} Assembly Election</span>
+            </div>
+            <div class="prev-result-meta">
+              <span class="prev-meta-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,0.8)"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6z"/></svg>
+                Total AC: {{ rec.totalSeats }}
+              </span>
+              <span class="prev-meta-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,0.8)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                Majority: {{ rec.majorityMark }}
+              </span>
+              <span class="prev-winner-badge">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                {{ rec.winner }} won
+              </span>
+            </div>
+          </div>
+
+          <!-- Party Tiles -->
+          <div class="prev-tiles-wrap">
+            @for (party of rec.parties; track party.shortName) {
+              <div class="prev-tile" [style.background]="party.color">
+                <span class="prev-tile-short">{{ party.shortName }}</span>
+                <span class="prev-tile-won">{{ party.won }}</span>
+                <span class="prev-tile-label">seats</span>
+              </div>
+            }
+          </div>
+
+          <!-- Data Table + Bar Chart -->
+          <div class="prev-data-panels">
+
+            <!-- Party Table -->
+            <div class="prev-panel">
+              <h3 class="panel-title">Party Wise Results — {{ rec.year }}</h3>
+              <table class="party-detail-table">
+                <thead>
+                  <tr>
+                    <th class="th-party">Party</th>
+                    <th class="th-num">Seats Won</th>
+                    <th class="th-num">Vote Share</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (party of rec.parties; track party.shortName) {
+                    <tr class="party-detail-row" [class.winner-row]="party.name === rec.winner">
+                      <td class="td-party">
+                        <span class="prev-dot" [style.background]="party.color"></span>
+                        {{ party.name }}
+                        @if (party.name === rec.winner) {
+                          <span class="winner-tag">Winner</span>
+                        }
+                      </td>
+                      <td class="td-num won-val">{{ party.won }}</td>
+                      <td class="td-num">{{ party.voteShare }}%</td>
+                    </tr>
+                  }
+                  <tr class="totals-detail-row">
+                    <td class="td-party"><strong>Total</strong></td>
+                    <td class="td-num won-val"><strong>{{ prevElecTotalWon(rec) }}</strong></td>
+                    <td class="td-num"><strong>100%</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Seat Distribution -->
+            <div class="prev-panel">
+              <h3 class="panel-title">Seat Distribution — {{ rec.year }}</h3>
+              <div class="prev-dist-bar-wrap">
+                <div class="cv-bar" style="height:48px;">
+                  @for (party of rec.parties; track party.shortName) {
+                    @if (party.won > 0) {
+                      <div class="cv-segment"
+                        [style.flex]="party.won"
+                        [style.background]="party.color"
+                        [title]="party.shortName + ': ' + party.won">
+                      </div>
+                    }
+                  }
+                </div>
+                <div class="cv-majority-mark" [style.left.%]="(rec.majorityMark / rec.totalSeats) * 100">
+                  <div class="cv-mark-line"></div>
+                  <span class="cv-mark-label">{{ rec.majorityMark }}</span>
+                </div>
+              </div>
+              <div class="prev-vote-bars">
+                @for (party of rec.parties; track party.shortName) {
+                  <div class="prev-vote-row">
+                    <div class="prev-vote-label">
+                      <span class="prev-dot" [style.background]="party.color"></span>
+                      <span class="prev-vote-name">{{ party.shortName }}</span>
+                    </div>
+                    <div class="prev-vote-track">
+                      <div class="prev-vote-fill" [style.width.%]="prevElecBarWidth(party, rec)" [style.background]="party.color"></div>
+                    </div>
+                    <span class="prev-vote-count">{{ party.won }}</span>
+                  </div>
+                }
+              </div>
+              <div class="prev-vote-share-note">
+                <strong>Vote Share Breakdown:</strong>
+                @for (party of rec.parties; track party.shortName) {
+                  <span class="vs-chip" [style.background]="party.color + '22'" [style.color]="party.color" [style.border-color]="party.color + '55'">
+                    {{ party.shortName }} {{ party.voteShare }}%
+                  </span>
+                }
+              </div>
+            </div>
+          </div>
+
+        </div>
+      } @else if (prevElecState() && !prevElecYear()) {
+        <div class="prev-elec-prompt">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+          <p>Now select a <strong>Year of Election</strong> to view results for <strong>{{ prevElecState() }}</strong></p>
+        </div>
+      } @else if (!prevElecState()) {
+        <div class="prev-elec-prompt">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+          <p>Select a <strong>State</strong> and <strong>Year</strong> above to explore past election results</p>
+        </div>
+      }
+
+    </div>
+  }
+
   <!-- HOME CONTENT (hidden when detail page is open) -->
-  @if (!selectedState()) {
+  @if (!selectedState() && !showPreviousElections()) {
 
   <!-- HERO SECTION -->
   <section class="hero">

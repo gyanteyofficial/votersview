@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 
 export interface Constituency {
   name: string;
+  candidateName: string;
   partyShortName: string;
   partyColor: string;
   partyName: string;
@@ -11,6 +12,309 @@ export interface Constituency {
   margin: number;
   status: 'Won' | 'Leading';
 }
+
+export interface PrevElecParty {
+  name: string;
+  shortName: string;
+  color: string;
+  won: number;
+  voteShare: number;
+}
+
+export interface PrevElecRecord {
+  state: string;
+  year: number;
+  totalSeats: number;
+  majorityMark: number;
+  headerColor: string;
+  headerGradient: string;
+  winner: string;
+  parties: PrevElecParty[];
+}
+
+const CANDIDATE_POOL: Record<string, string[]> = {
+  'ASSAM': [
+    'Himanta Biswa Sarma','Atul Bora','Ranjit Kumar Dass','Pijush Hazarika','Ajanta Neog',
+    'Pradyut Bordoloi','Rockybul Hussain','Debabrata Saikia','Gaurav Gogoi','Abdul Khaleque',
+    'Wazed Ali Choudhury','Aminul Islam','Siraj Uddin Ajmal','Bhumidhar Burman','Ranoj Pegu',
+    'Rihon Daimary','Phani Bhushan Choudhury','Rekibuddin Ahmed','Ripun Bora','Bijoy Chakravarty',
+    'Rupjyoti Kurmi','Siddhartha Bhattacharya','Binanda Kumar Saikia','Mrinal Kumar Saikia',
+    'Krishak Mukhya','Ghanashyam Das','Tapan Gogoi','Dilip Paul','Ramendra Narayan Kalita',
+    'Subimal Bhattacharjee','Sibu Misra','Dilip Kumar Barua','Jagadish Bhuyan','Susanta Borgohain',
+    'Probin Gogoi','Rajib Lochan Pegu','Robin Bordoloi','Bhola Nath Das','Raben Das','Mintu Das',
+    'Paresh Chandra Baruah','Nripen Goswami','Pranab Gogoi','Bhaben Ray','Dhiren Das',
+    'Saumen Phukan','Prashant Phukan','Jatin Bora','Habul Choudhury','Bhaben Choudhury',
+    'Pradip Hazarika','Kaushik Rai','Binod Hazarika','Luhit Kumar Gogoi','Rajib Lochan Bora',
+    'Hemanta Das','Rupak Sarmah','Subhash Das','Biswajit Das','Samiran Das',
+    'Manoranjan Talukdar','Pradip Saikia','Rupak Gogoi','Rajib Saikia','Nripen Saikia',
+    'Anup Rabha','Deben Deka','Ramen Deka','Biren Deka','Dilip Deka',
+    'Subha Narayan Das','Ratna Das','Mita Das','Sita Das','Anita Das',
+    'Krishna Barman','Ranjit Barman','Bijit Barman','Sanjit Barman','Manu Barman',
+    'Priyaranjan Choudhury','Tapan Choudhury','Bipul Choudhury','Nripen Choudhury','Dilip Choudhury',
+    'Raben Bora','Tapan Bora','Dilip Bora','Nripen Bora','Hemanta Bora',
+    'Manoranjan Gogoi','Pradip Gogoi','Dilip Gogoi','Nripen Gogoi','Tapan Gogoi2',
+    'Ghanashyam Barua','Manab Barua','Prafulla Barua','Deepak Barua','Rajib Barua',
+    'Lakhinandan Bora','Kushal Deka','Tarun Gogoi Jr','Subhash Sarma','Biswajit Sarma',
+    'Jitendra Basumatary','Urkhao Gwra Brahma','Pradip Brahma','Ranjit Brahma','Mohan Brahma',
+  ],
+  'KERALA': [
+    'Pinarayi Vijayan','K N Balagopal','V Sivankutty','V S Achuthanandan','Thomas Isaac',
+    'Oommen Chandy','Ramesh Chennithala','V D Satheesan','K Muraleedharan','Shashi Tharoor',
+    'K Sudhakaran','P K Kunhalikutty','M A Baby','Kodiyeri Balakrishnan','G Sudhakaran',
+    'E P Jayarajan','A C Moideen','K Raju','Kadannappally Ramachandran','P Rajeeve',
+    'M Vijin','K Dasan','P Sarin','Mathew T Thomas','E T Mohammed Basheer',
+    'Jose K Mani','K M Mani','P C George','Francis George','Ben George',
+    'K B Ganesh Kumar','Adoor Prakash','Aryadan Shoukath','T Siddique','Anwar Sadath',
+    'K Babu','S Sarma','N Krishnakumar','V T Balram','Sreejith Pillai',
+    'K D Prasenan','Maniyam Manoj','K Ansalan','Nidheesh','Venugopal',
+    'Chitharanjan','O R Kelu','A N Shamseer','P A Mohammed Riyas','Antony Raju',
+    'R Bindhu','J Mercykutty Amma','Veena George','K K Shailaja','K Anivar',
+    'T J Vinodh','P K Sasi','I C Balakrishnan','V K Ibrahim Kunju','P Ubaid',
+    'M Noushad','K M Shajahan','K P Kader','P Aisha Potta','N Samsudheen',
+    'Jaleel','Kodikunnil Suresh','K C Venugopal','Dean Kuriakose','Hibi Eden',
+    'Eldhose Kunnappilly','Mathew Kuzhalnadan','Anoop Jacob','Roji M John','Boby George',
+    'P C Vishnunadh','Biju Krishna','N Jayaraj','V Sasi','K Sivadasan',
+    'Thiruvanchoor Radhakrishnan','Anoop Jacob 2','Raju Abraham','Sunny Joseph','K Babu 2',
+    'Jose Tom Pulikkunnel','Saji Cheriyan','T N Prathapan','Suresh Kurup','Krishna Pillai',
+  ],
+  'PUDUCHERRY': [
+    'N Rangasamy','V Narayanasamy','R Kamaraj','A Namassivayam','E Theeppainathan',
+    'M Kandasamy','John Kumar','M Malladi Krishna Rao','R Siva','K Lakshminarayanan',
+    'A John Kumar','P Mohan','Solairajan','R Soundararajan','T Thamimun Ansari',
+    'M O H Farook','Chandira Priyanga','Ayyakannu','A M H Nazeem','Jayaganesh',
+    'Ramalingam','Subramani','Murugesan','Anbalagan','Periyasamy',
+    'Selvam','Krishnamoorthy','Vaithiyanathan','Thangavelu','Boominathan',
+  ],
+  'TAMIL NADU': [
+    'M K Stalin','Edappadi K Palaniswami','O Panneerselvam','Duraimurugan','T R Baalu',
+    'Udhayanidhi Stalin','Kanimozhi','S Vaikundarajan','R S Bharathi','I Periyasami',
+    'Thangam Thennarasu','Ma Subramanian','K N Nehru','V Senthilbalaji','P T R Palanivel Thiagarajan',
+    'E V Velu','S Rajenthra Bhalaji','S Muthusubramanian','Kaveri Selvaraj','Durai Murugan Jr',
+    'P Moorthy','G Baskaran','K Pitchandi','R Rajendran','S Krishnan',
+    'M Anbazhagan','K Selvaperunthagai','I Suresh','N Kayalvizhi','V Parthasarathy',
+    'R Murugan','K Annamalai','L Murugan','Nainar Nagendran','Tamilisai Soundararajan',
+    'A Bakulabharathi','H Raja','C Ve Shanmugam','O S Manian','P S Raamojee',
+    'N Srinivasan','T Sundaram','T Velmurugan','K Palaniswami','A Venkatachalam',
+    'R Kamaraj','Vanitha Krishnakumar','P Mariyammal','V Geetha','S Kavitha',
+    'K Selvam','M Murugesan','P Annamalai','R Sivakumar','V Ramar',
+    'T S Subramanian','K Suresh','V Saminathan','G Subramaniam','S Elangovan',
+    'M Sekar','A Jeevanandham','P Marimuthu','R Rajan','K Rajendran',
+    'N Chandrasekaran','R Periasamy','K Thirumavalavan','K Balakrishnan','S Arumugam',
+    'R Sakkarapani','P Palaniappan','D Jayakumar','C Vijayabaskar','S Sellur Raju',
+    'Vaigaichelvan','Natham Viswanathan','S Velumani','Jayagopal','Manikandan',
+    'R Sathiyaprakash','S Ganesan','M Boominathan','Balasubramanian','Ravishankar',
+    'Soundararajan','Krishnamoorthi','Muthusamy','Shanmugam','Veeramani',
+    'Pandiyan','Rajasekaran','Anandraj','Eswaran','Murugesan',
+    'Velusamy','Karuppusamy','Selvakumar','Chinnaraj','Ramasamy',
+    'Kandasamy','Duraisamy','Arumugam','Ramamoorthy','Senthilkumar',
+    'Kathiravan','Ganapathy','Subramaniam','Ponraj','Chellaiah',
+    'Palaniyappan','Periasamy','Manoharan','Nallakannu','Venugopal',
+    'Kumaresan','Sivasankaran','Tamilmani','Baskaran','Gopalan',
+    'Vasanthi','Padmavathi','Meenakshi','Chitra','Malathi',
+  ],
+  'WEST BENGAL': [
+    'Mamata Banerjee','Abhishek Banerjee','Suvendu Adhikari','Firhad Hakim','Madan Mitra',
+    'Aroop Biswas','Subrata Mukherjee','Partha Chatterjee','Sujit Bose','Chandrima Bhattacharya',
+    'Dilip Ghosh','Suvendu Adhikari Jr','Mukul Roy','Sisir Adhikari','Tapas Roy',
+    'Rajib Banerjee','Jitendra Tiwari','Mihir Goswami','Sandip Ghosh','Raju Banerjee',
+    'Biplab Kumar Mitra','Ashok Bhattacharya','Sujan Chakraborty','Tanmoy Bhattacharya','Rabin Deb',
+    'Mohammad Salim','Biman Bose','Surjya Kanta Mishra','Kanti Ganguly','Nilotpal Basu',
+    'Pradip Bhattacharya','Adhir Ranjan Chowdhury','Somen Mitra','Prashanta Kishori Roy','Abdur Rezzak Molla',
+    'Idris Ali','Haji Nurul Islam','Abu Taher Khan','Manirul Islam','Siddiqullah Chowdhury',
+    'Sobhandeb Chattopadhyay','Tapan Dasgupta','Debasish Kumar','Atindra Nath Ghosh','Pradip Majumdar',
+    'Krishnendu Narayan Choudhury','Goutam Deb','Udayan Guha','Samir Chakrabarti','Kanai Lal Agarwal',
+    'Prabir Ghoshal','Samir Ghosh','Sushil Mandal','Pradip Roy','Ashim Kumar Ghosh',
+    'Narendranath Chakraborty','Uttam Kumar Ghosh','Bappaditya Ghosh','Dipak Kumar Sanyal','Swapan Debnath',
+    'Chiranjib Bhattacharjee','Srikanta Mahato','Arunava Sinha','Palash Mandal','Rajesh Sarkar',
+    'Debalina Hembram','Sona Ram Soren','Manoj Kumar Mandal','Biswanath Das','Parimal Suklabaidya',
+    'Ajoy De','Provas Sarkar','Swapan Dasgupta','Locket Chatterjee','Babul Supriyo',
+    'Saumitra Khan','Arjun Singh','Jyotirmoy Singh Mahato','Subhrangshu Roy','Dibyendu Adhikari',
+    'Mriganka Mahato','Tushar Kanti Bhattacharya','Sabyasachi Dutta','Srikumar Mukherjee','Manas Ranjan Bhunia',
+    'Jayanta Naskar','Shyamal Mandal','Arup Roy','Nirmal Ghosh','Sajal Ghosh',
+    'Ratan Bose','Tapan Bose','Dulal Das','Kaushik Ghosh','Samit Dasgupta',
+    'Gopal Dey','Subhas Naskar','Swapan Naskar','Tapan Naskar','Ranjit Naskar',
+    'Samran Halder','Munjur Ahmed Lashkar','Jafar Ahmed','Rabiul Islam','Nurul Islam',
+    'Humayun Kabir','Iqbal Ahmed','Zayed Ahmed','Rejaur Rahman','Sirajul Islam',
+    'Goutam Chakraborty','Sujit Chakraborty','Tapan Chakraborty','Dulal Chakraborty','Raju Chakraborty',
+    'Dulal Bar','Tapan Bar','Ranjit Bar','Kanai Bar','Sunil Bar',
+    'Mohua Moitra','Aparupa Poddar','Satabdi Roy','Mimi Chakraborty','Nusrat Jahan',
+    'Shashi Panja','Ratna De Nag','Kakoli Ghosh Dastidar','Arpita Ghosh','Locket Chatterjee2',
+    'Biswajit Singha Roy','Swapan Singha Roy','Arjit Singha Roy','Kamal Singha Roy','Dilip Singha Roy',
+    'Dulal Mukherjee','Tapan Mukherjee','Samit Mukherjee','Ranjit Mukherjee','Pradip Mukherjee',
+  ],
+};
+
+const PREVIOUS_ELECTIONS: PrevElecRecord[] = [
+  {
+    state: 'ASSAM', year: 2021, totalSeats: 126, majorityMark: 64,
+    headerColor: '#b91c1c', headerGradient: 'linear-gradient(135deg,#b91c1c,#ef4444)',
+    winner: 'BJP Alliance (NDA)',
+    parties: [
+      { name: 'BJP Alliance (NDA)', shortName: 'BJP+',  color: '#f97316', won: 75, voteShare: 42.8 },
+      { name: 'INC Alliance',       shortName: 'INC+',  color: '#2563eb', won: 50, voteShare: 39.6 },
+      { name: 'AIUDF',              shortName: 'AIUDF', color: '#16a34a', won: 0,  voteShare: 7.8  },
+      { name: 'Others',             shortName: 'OTH',   color: '#6b7280', won: 1,  voteShare: 9.8  },
+    ]
+  },
+  {
+    state: 'ASSAM', year: 2016, totalSeats: 126, majorityMark: 64,
+    headerColor: '#b91c1c', headerGradient: 'linear-gradient(135deg,#b91c1c,#ef4444)',
+    winner: 'BJP Alliance (NDA)',
+    parties: [
+      { name: 'BJP Alliance (NDA)', shortName: 'BJP+',  color: '#f97316', won: 86, voteShare: 41.9 },
+      { name: 'INC',                shortName: 'INC',   color: '#2563eb', won: 26, voteShare: 31.0 },
+      { name: 'AIUDF',              shortName: 'AIUDF', color: '#16a34a', won: 13, voteShare: 12.9 },
+      { name: 'Others',             shortName: 'OTH',   color: '#6b7280', won: 1,  voteShare: 14.2 },
+    ]
+  },
+  {
+    state: 'ASSAM', year: 2011, totalSeats: 126, majorityMark: 64,
+    headerColor: '#b91c1c', headerGradient: 'linear-gradient(135deg,#b91c1c,#ef4444)',
+    winner: 'INC',
+    parties: [
+      { name: 'INC',                shortName: 'INC',   color: '#2563eb', won: 78, voteShare: 39.4 },
+      { name: 'AIUDF',              shortName: 'AIUDF', color: '#16a34a', won: 18, voteShare: 17.3 },
+      { name: 'AGP',                shortName: 'AGP',   color: '#7c3aed', won: 9,  voteShare: 16.2 },
+      { name: 'BJP',                shortName: 'BJP',   color: '#f97316', won: 5,  voteShare: 11.5 },
+      { name: 'Others',             shortName: 'OTH',   color: '#6b7280', won: 16, voteShare: 15.6 },
+    ]
+  },
+  {
+    state: 'KERALA', year: 2021, totalSeats: 140, majorityMark: 71,
+    headerColor: '#b45309', headerGradient: 'linear-gradient(135deg,#b45309,#d97706)',
+    winner: 'LDF (Left Democratic Front)',
+    parties: [
+      { name: 'LDF (Left Democratic Front)',   shortName: 'LDF', color: '#dc2626', won: 99, voteShare: 45.4 },
+      { name: 'UDF (United Democratic Front)', shortName: 'UDF', color: '#2563eb', won: 41, voteShare: 40.2 },
+      { name: 'NDA (BJP+)',                    shortName: 'NDA', color: '#f97316', won: 0,  voteShare: 12.4 },
+      { name: 'Others',                        shortName: 'OTH', color: '#6b7280', won: 0,  voteShare: 2.0  },
+    ]
+  },
+  {
+    state: 'KERALA', year: 2016, totalSeats: 140, majorityMark: 71,
+    headerColor: '#b45309', headerGradient: 'linear-gradient(135deg,#b45309,#d97706)',
+    winner: 'LDF (Left Democratic Front)',
+    parties: [
+      { name: 'LDF (Left Democratic Front)',   shortName: 'LDF', color: '#dc2626', won: 91, voteShare: 43.5 },
+      { name: 'UDF (United Democratic Front)', shortName: 'UDF', color: '#2563eb', won: 47, voteShare: 38.9 },
+      { name: 'NDA (BJP+)',                    shortName: 'NDA', color: '#f97316', won: 1,  voteShare: 15.0 },
+      { name: 'Others',                        shortName: 'OTH', color: '#6b7280', won: 1,  voteShare: 2.6  },
+    ]
+  },
+  {
+    state: 'KERALA', year: 2011, totalSeats: 140, majorityMark: 71,
+    headerColor: '#b45309', headerGradient: 'linear-gradient(135deg,#b45309,#d97706)',
+    winner: 'UDF (United Democratic Front)',
+    parties: [
+      { name: 'UDF (United Democratic Front)', shortName: 'UDF', color: '#2563eb', won: 72, voteShare: 45.8 },
+      { name: 'LDF (Left Democratic Front)',   shortName: 'LDF', color: '#dc2626', won: 68, voteShare: 44.9 },
+      { name: 'NDA (BJP+)',                    shortName: 'NDA', color: '#f97316', won: 0,  voteShare: 6.0  },
+      { name: 'Others',                        shortName: 'OTH', color: '#6b7280', won: 0,  voteShare: 3.3  },
+    ]
+  },
+  {
+    state: 'PUDUCHERRY', year: 2021, totalSeats: 30, majorityMark: 16,
+    headerColor: '#7c3aed', headerGradient: 'linear-gradient(135deg,#7c3aed,#a855f7)',
+    winner: 'NDA (AINRC + BJP)',
+    parties: [
+      { name: 'AINRC',  shortName: 'AINRC', color: '#dc2626', won: 10, voteShare: 25.4 },
+      { name: 'BJP',    shortName: 'BJP',   color: '#f97316', won: 6,  voteShare: 13.1 },
+      { name: 'INC',    shortName: 'INC',   color: '#2563eb', won: 2,  voteShare: 15.8 },
+      { name: 'DMK',    shortName: 'DMK',   color: '#1a1a1a', won: 6,  voteShare: 22.2 },
+      { name: 'Others', shortName: 'OTH',   color: '#6b7280', won: 6,  voteShare: 23.5 },
+    ]
+  },
+  {
+    state: 'PUDUCHERRY', year: 2016, totalSeats: 30, majorityMark: 16,
+    headerColor: '#7c3aed', headerGradient: 'linear-gradient(135deg,#7c3aed,#a855f7)',
+    winner: 'INC Alliance',
+    parties: [
+      { name: 'INC',    shortName: 'INC',   color: '#2563eb', won: 15, voteShare: 35.5 },
+      { name: 'AINRC',  shortName: 'AINRC', color: '#dc2626', won: 8,  voteShare: 22.3 },
+      { name: 'AIADMK', shortName: 'ADMK',  color: '#16a34a', won: 4,  voteShare: 17.2 },
+      { name: 'DMK',    shortName: 'DMK',   color: '#1a1a1a', won: 2,  voteShare: 11.5 },
+      { name: 'Others', shortName: 'OTH',   color: '#6b7280', won: 1,  voteShare: 13.5 },
+    ]
+  },
+  {
+    state: 'PUDUCHERRY', year: 2011, totalSeats: 30, majorityMark: 16,
+    headerColor: '#7c3aed', headerGradient: 'linear-gradient(135deg,#7c3aed,#a855f7)',
+    winner: 'AINRC',
+    parties: [
+      { name: 'AINRC',  shortName: 'AINRC', color: '#dc2626', won: 15, voteShare: 30.1 },
+      { name: 'INC',    shortName: 'INC',   color: '#2563eb', won: 7,  voteShare: 24.6 },
+      { name: 'DMK',    shortName: 'DMK',   color: '#1a1a1a', won: 6,  voteShare: 19.9 },
+      { name: 'Others', shortName: 'OTH',   color: '#6b7280', won: 2,  voteShare: 25.4 },
+    ]
+  },
+  {
+    state: 'TAMIL NADU', year: 2021, totalSeats: 234, majorityMark: 118,
+    headerColor: '#0f766e', headerGradient: 'linear-gradient(135deg,#0f766e,#14b8a6)',
+    winner: 'DMK Alliance',
+    parties: [
+      { name: 'DMK Alliance',    shortName: 'DMK+',  color: '#dc2626', won: 159, voteShare: 45.5 },
+      { name: 'AIADMK Alliance', shortName: 'ADMK+', color: '#16a34a', won: 75,  voteShare: 38.0 },
+      { name: 'BJP',             shortName: 'BJP',   color: '#f97316', won: 0,   voteShare: 2.6  },
+      { name: 'Others',          shortName: 'OTH',   color: '#6b7280', won: 0,   voteShare: 13.9 },
+    ]
+  },
+  {
+    state: 'TAMIL NADU', year: 2016, totalSeats: 234, majorityMark: 118,
+    headerColor: '#0f766e', headerGradient: 'linear-gradient(135deg,#0f766e,#14b8a6)',
+    winner: 'AIADMK',
+    parties: [
+      { name: 'AIADMK',     shortName: 'ADMK', color: '#16a34a', won: 134, voteShare: 40.8 },
+      { name: 'DMK+',       shortName: 'DMK+', color: '#dc2626', won: 98,  voteShare: 40.4 },
+      { name: 'DMDK+',      shortName: 'DMDK', color: '#7c3aed', won: 1,   voteShare: 4.1  },
+      { name: 'Others',     shortName: 'OTH',  color: '#6b7280', won: 1,   voteShare: 14.7 },
+    ]
+  },
+  {
+    state: 'TAMIL NADU', year: 2011, totalSeats: 234, majorityMark: 118,
+    headerColor: '#0f766e', headerGradient: 'linear-gradient(135deg,#0f766e,#14b8a6)',
+    winner: 'AIADMK Alliance',
+    parties: [
+      { name: 'AIADMK Alliance', shortName: 'ADMK+', color: '#16a34a', won: 203, voteShare: 38.4 },
+      { name: 'DMK Alliance',    shortName: 'DMK+',  color: '#dc2626', won: 31,  voteShare: 39.5 },
+      { name: 'Others',          shortName: 'OTH',   color: '#6b7280', won: 0,   voteShare: 22.1 },
+    ]
+  },
+  {
+    state: 'WEST BENGAL', year: 2021, totalSeats: 294, majorityMark: 148,
+    headerColor: '#1d4ed8', headerGradient: 'linear-gradient(135deg,#1d4ed8,#3b82f6)',
+    winner: 'AITC (Trinamool Congress)',
+    parties: [
+      { name: 'AITC (Trinamool Congress)', shortName: 'AITC', color: '#16a34a', won: 213, voteShare: 47.9 },
+      { name: 'BJP',                       shortName: 'BJP',  color: '#f97316', won: 77,  voteShare: 38.1 },
+      { name: 'ISF',                       shortName: 'ISF',  color: '#7c3aed', won: 1,   voteShare: 2.0  },
+      { name: 'INC + Left',               shortName: 'INC+', color: '#2563eb', won: 0,   voteShare: 7.2  },
+      { name: 'Others',                    shortName: 'OTH',  color: '#6b7280', won: 3,   voteShare: 4.8  },
+    ]
+  },
+  {
+    state: 'WEST BENGAL', year: 2016, totalSeats: 294, majorityMark: 148,
+    headerColor: '#1d4ed8', headerGradient: 'linear-gradient(135deg,#1d4ed8,#3b82f6)',
+    winner: 'AITC (Trinamool Congress)',
+    parties: [
+      { name: 'AITC (Trinamool Congress)', shortName: 'AITC', color: '#16a34a', won: 211, voteShare: 44.9 },
+      { name: 'Left Front',               shortName: 'LF',   color: '#dc2626', won: 26,  voteShare: 25.7 },
+      { name: 'INC',                      shortName: 'INC',  color: '#2563eb', won: 44,  voteShare: 12.3 },
+      { name: 'BJP',                      shortName: 'BJP',  color: '#f97316', won: 3,   voteShare: 10.2 },
+      { name: 'Others',                   shortName: 'OTH',  color: '#6b7280', won: 10,  voteShare: 6.9  },
+    ]
+  },
+  {
+    state: 'WEST BENGAL', year: 2011, totalSeats: 294, majorityMark: 148,
+    headerColor: '#1d4ed8', headerGradient: 'linear-gradient(135deg,#1d4ed8,#3b82f6)',
+    winner: 'AITC (Trinamool Congress)',
+    parties: [
+      { name: 'AITC + INC Alliance', shortName: 'AITC+', color: '#16a34a', won: 227, voteShare: 48.3 },
+      { name: 'Left Front',          shortName: 'LF',    color: '#dc2626', won: 62,  voteShare: 41.1 },
+      { name: 'BJP',                 shortName: 'BJP',   color: '#f97316', won: 0,   voteShare: 4.1  },
+      { name: 'Others',              shortName: 'OTH',   color: '#6b7280', won: 5,   voteShare: 6.5  },
+    ]
+  },
+];
 
 const CONSTITUENCY_NAMES: Record<string, string[]> = {
   'ASSAM': [
@@ -338,6 +642,9 @@ export class App implements OnInit, OnDestroy {
   langDropdownOpen = signal<boolean>(false);
   selectedState = signal<StateResult | null>(null);
   selectedConstituencyName = signal<string>('');
+  showPreviousElections = signal<boolean>(false);
+  prevElecState = signal<string>('');
+  prevElecYear = signal<string>('');
 
   private timerInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -541,34 +848,39 @@ export class App implements OnInit, OnDestroy {
 
   getConstituencies(state: StateResult): Constituency[] {
     const names = CONSTITUENCY_NAMES[state.state] ?? [];
+    const pool = CANDIDATE_POOL[state.state] ?? [];
     const result: Constituency[] = [];
     let idx = 0;
     for (const party of state.parties) {
       for (let w = 0; w < party.won; w++) {
         if (idx >= names.length) break;
         result.push({
-          name: names[idx++],
+          name: names[idx],
+          candidateName: pool[idx % pool.length] ?? 'Candidate',
           partyShortName: party.shortName,
           partyColor: party.color,
           partyName: party.name,
-          votes: 40000 + Math.floor(Math.random() * 60000),
-          margin: 500 + Math.floor(Math.random() * 20000),
+          votes: 40000 + ((idx * 7919) % 60000),
+          margin: 500 + ((idx * 3571) % 20000),
           status: 'Won',
         });
+        idx++;
       }
     }
     for (const party of state.parties) {
       for (let l = 0; l < party.leading; l++) {
         if (idx >= names.length) break;
         result.push({
-          name: names[idx++],
+          name: names[idx],
+          candidateName: pool[idx % pool.length] ?? 'Candidate',
           partyShortName: party.shortName,
           partyColor: party.color,
           partyName: party.name,
-          votes: 30000 + Math.floor(Math.random() * 40000),
-          margin: 100 + Math.floor(Math.random() * 5000),
+          votes: 30000 + ((idx * 6271) % 40000),
+          margin: 100 + ((idx * 1327) % 5000),
           status: 'Leading',
         });
+        idx++;
       }
     }
     return result;
@@ -584,4 +896,43 @@ export class App implements OnInit, OnDestroy {
     const s = this.selectedState();
     return s ? this.getConstituencies(s) : [];
   });
+
+  openPreviousElections() {
+    this.selectedState.set(null);
+    this.showPreviousElections.set(true);
+    this.prevElecState.set('');
+    this.prevElecYear.set('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  closePreviousElections() {
+    this.showPreviousElections.set(false);
+    this.prevElecState.set('');
+    this.prevElecYear.set('');
+  }
+
+  prevElecAvailableStates(): string[] {
+    return [...new Set(PREVIOUS_ELECTIONS.map(r => r.state))].sort();
+  }
+
+  prevElecYearsForState(): number[] {
+    const st = this.prevElecState();
+    if (!st) return [];
+    return PREVIOUS_ELECTIONS.filter(r => r.state === st).map(r => r.year).sort((a, b) => b - a);
+  }
+
+  prevElecRecord = computed((): PrevElecRecord | null => {
+    const st = this.prevElecState();
+    const yr = this.prevElecYear();
+    if (!st || !yr) return null;
+    return PREVIOUS_ELECTIONS.find(r => r.state === st && r.year === +yr) ?? null;
+  });
+
+  prevElecTotalWon(rec: PrevElecRecord): number {
+    return rec.parties.reduce((s, p) => s + p.won, 0);
+  }
+
+  prevElecBarWidth(party: PrevElecParty, rec: PrevElecRecord): number {
+    return rec.totalSeats > 0 ? Math.round((party.won / rec.totalSeats) * 100) : 0;
+  }
 }
